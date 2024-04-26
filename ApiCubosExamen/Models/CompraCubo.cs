@@ -13,7 +13,7 @@ namespace ApiCubosExamen.Models
         public int IdCubo { get; set; }
         [Column("ID_USUARIO")]
         public int IdUsuario { get; set; }
-        [Column("ID_PEDIDO")]
+        [Column("fechapedido")]
         public DateTime FechaPedido { get; set; }
     }
 }

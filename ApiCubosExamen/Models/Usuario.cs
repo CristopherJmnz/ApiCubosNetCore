@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ApiCubosExamen.Models
 {
-    [Table("USUARIOCUBOS")]
+    [Table("USUARIOSCUBO")]
     public class Usuario
     {
         [Key]
@@ -14,7 +14,7 @@ namespace ApiCubosExamen.Models
 
         [Column("EMAIL")]
         public string Email { get; set; }
-        [Column("Password")]
+        [Column("Pass")]
         public string Password { get; set; }
         [Column("imagen")]
         public string Imagen{ get; set; }

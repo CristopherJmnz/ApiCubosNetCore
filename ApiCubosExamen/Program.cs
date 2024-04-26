@@ -2,18 +2,23 @@ using ApiCubosExamen.Data;
 using ApiCubosExamen.Helpers;
 using ApiCubosExamen.Respositories;
 using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-//keyvault
+//Configuracion de keyvaults
 builder.Services.AddAzureClients(factory =>
 {
     factory.AddSecretClient
     (builder.Configuration.GetSection("KeyVault"));
 });
-SecretClient secretClient = builder.Services.BuildServiceProvider().GetService<SecretClient>();
+SecretClient secretClient =
+builder.Services.BuildServiceProvider().GetService<SecretClient>();
 KeyVaultSecret secretConnectionString =
     await secretClient.GetSecretAsync("SqlAzure");
 
@@ -22,11 +27,13 @@ string connectionString = secretConnectionString.Value;
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddTransient<CubosRepository>();
+//string connectionString = builder.Configuration.GetConnectionString("SqlAzure");
 builder.Services.AddDbContext<CubosContext>(options => options.UseSqlServer(connectionString));
 
 //Inyeccion del helper
 HelperActionServicesOAuth helper = new HelperActionServicesOAuth(builder.Configuration);
 builder.Services.AddSingleton<HelperActionServicesOAuth>(helper);
+
 
 //Configuracion del JWT
 builder.Services.AddAuthentication
@@ -35,21 +42,14 @@ builder.Services.AddAuthentication
 
 
 //CONFIG SWAGGER
-builder.Services.AddOpenApiDocument(document =>
+builder.Services.AddSwaggerGen(options =>
 {
-    document.Title = "Api CUBOS";
-    document.Description = "Api CUBOS";
-    document.AddSecurity("JWT", Enumerable.Empty<string>(),
-        new NSwag.OpenApiSecurityScheme
-        {
-            Type = OpenApiSecuritySchemeType.ApiKey,
-            Name = "Authorization",
-            In = OpenApiSecurityApiKeyLocation.Header,
-            Description = "Copia y pega el Token en el campo 'Value:' así: Bearer {Token JWT}."
-        }
-    );
-    document.OperationProcessors.Add(
-    new AspNetCoreOperationSecurityScopeProcessor("JWT"));
+    options.SwaggerDoc("v1", new OpenApiInfo()
+    {
+        Version = "v1",
+        Title = "Api cubos cris",
+        Description = "Api"
+    });
 });
 var app = builder.Build();
 
