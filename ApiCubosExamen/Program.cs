@@ -1,7 +1,9 @@
 using ApiCubosExamen.Data;
 using ApiCubosExamen.Helpers;
 using ApiCubosExamen.Respositories;
+using ApiCubosExamen.Services;
 using Azure.Security.KeyVault.Secrets;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +26,9 @@ KeyVaultSecret secretConnectionString =
 
 //config DB connection
 string connectionString = secretConnectionString.Value;
+string azurekeys = builder.Configuration.GetValue<string>("AzureKeys:StorageAccount");
+BlobServiceClient blobServiceClient = new BlobServiceClient(azurekeys);
+builder.Services.AddTransient<StorageBlobsService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddTransient<CubosRepository>();

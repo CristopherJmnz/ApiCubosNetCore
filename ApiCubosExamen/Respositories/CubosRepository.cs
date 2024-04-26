@@ -1,5 +1,6 @@
 ﻿using ApiCubosExamen.Data;
 using ApiCubosExamen.Models;
+using ApiCubosExamen.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Numerics;
 
@@ -8,8 +9,10 @@ namespace ApiCubosExamen.Respositories
     public class CubosRepository
     {
         private CubosContext context;
-        public CubosRepository(CubosContext context)
+        private StorageBlobsService service;
+        public CubosRepository(CubosContext context, StorageBlobsService service)
         {
+            this.service = service;
             this.context = context;
         }
 
