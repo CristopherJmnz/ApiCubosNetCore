@@ -1,6 +1,5 @@
 ﻿using ApiCubosExamen.Data;
 using ApiCubosExamen.Models;
-using ApiCubosExamen.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Numerics;
 
@@ -9,22 +8,34 @@ namespace ApiCubosExamen.Respositories
     public class CubosRepository
     {
         private CubosContext context;
-        private StorageBlobsService service;
-        public CubosRepository(CubosContext context, StorageBlobsService service)
+        private string BlobUrl;
+        public CubosRepository(CubosContext context, IConfiguration config)
         {
-            this.service = service;
+            this.BlobUrl = config.GetValue<string>("AzureKeys:BlobUrl");
             this.context = context;
         }
 
         public async Task<List<Cubo>> GetCubosAsync()
         {
-            return await this.context.Cubos.ToListAsync();
+            List<Cubo> cubos = new List<Cubo>();
+            foreach (Cubo item in await this.context.Cubos.ToListAsync())
+            {
+                item.Imagen = BlobUrl + item.Imagen;
+                cubos.Add(item);
+            }
+            return cubos;
         }
 
         public async Task<List<Cubo>> GetCubosByMarcaAsync(string marca)
         {
-            return await this.context.Cubos
-                .Where(x=>x.Marca==marca).ToListAsync();
+            List<Cubo> cubos = new List<Cubo>();
+            foreach (Cubo item in await this.context.Cubos
+                .Where(x => x.Marca == marca).ToListAsync())
+            {
+                item.Imagen = BlobUrl + item.Imagen;
+                cubos.Add(item);
+            }
+            return cubos;
         }
 
         public async Task CreateUsuarioAsync(Usuario user)
@@ -36,7 +47,7 @@ namespace ApiCubosExamen.Respositories
         public async Task<List<CompraCubo>> GetPedidosUsuarioAsync(int id)
         {
             return await this.context.Compras
-                .Where(x=>x.IdUsuario==id).ToListAsync();
+                .Where(x => x.IdUsuario == id).ToListAsync();
         }
 
         public async Task CreatePedidoAsync(CompraCubo compra)
@@ -47,8 +58,10 @@ namespace ApiCubosExamen.Respositories
 
         public async Task<Usuario> FindUsuarioAsync(int id)
         {
-            return await this.context.Usuarios
-                .FirstOrDefaultAsync(x=>x.IdUsuario==id);
+            Usuario user = await this.context.Usuarios
+                .FirstOrDefaultAsync(x => x.IdUsuario == id);
+            user.Imagen=this.BlobUrl+ user.Imagen;
+            return user;
         }
 
         public async Task<Usuario> LogInAsync
